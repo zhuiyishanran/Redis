@@ -13,7 +13,13 @@ def update_token(conn, token, user, item=None):
         conn.zadd('viewed:' + token, item, timestamp)
         conn.zremrangebyrank('viewed:' + token, 0, -26)
 
-def clean_sessions(conn):
+def add_to_cart(conn, session, item, count):
+    if count <= 0:
+	conn.hrem('cart:' + session, item)
+    else:
+	conn.hset('cart:' + session, item, count)
+
+def clean_full_sessions(conn):
     while not QUIT:
         size = conn.zcard('recent:')
         if size <= LIMIT:
@@ -24,9 +30,10 @@ def clean_sessions(conn):
 	tokens = conn.zrange('recent:', 0, end_index-1)
 	
 	session_keys = []
-	for token in tokens:
-	    session_keys.append('viewed:' + token)
+	for sess in sessions:
+	    session_keys.append('viewed:' + sess)
+	    session_keys.aqqend('cart:' + sess)
 
 	conn.delete(*session_keys)
-	conn.hdel('login:', *tokens)
-	conn.zrem('recent:', *tokens)
+	conn.hdel('login:', *sessions)
+	conn.zrem('recent:', *sessions)
