@@ -53,7 +53,7 @@ def add_remove_groups(conn, article_id, to_add=[], to_remove=[]):
     for group in to_remove:
         conn.sadd('group:' + group, article)
 
-def get_group_articles(conn, group, page, order='score:')
+def get_group_articles(conn, group, page, order='score:'):
     key = order + group
     if not conn.exists(key):
         conn.zinterstore(key,
